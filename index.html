@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golf TeeTime Booking</title>
+  <link rel="stylesheet" href="styles.css?v=20260602-manager-1">
+</head>
+<body>
+  <header class="hero-visual" aria-label="บรรยากาศสนามกอล์ฟ">
+    <div class="hero-copy">
+      <span>Golf Course Booking</span>
+      <strong>ระบบจองเวลาออกรอบ</strong>
+    </div>
+  </header>
+
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Online Golf Operation</p>
+      <h1>ระบบจองสนามกอล์ฟออนไลน์</h1>
+    </div>
+    <div class="today-card">
+      <span>วันที่ใช้งาน</span>
+      <strong id="todayLabel">-</strong>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <nav class="tabs" aria-label="หน้าระบบ">
+      <button class="tab active" data-tab="booking">ผู้จอง</button>
+      <button class="tab" data-tab="guest-summary">ข้อมูลการจอง</button>
+      <button class="tab" data-tab="caddy">Caddy Page</button>
+      <button class="tab" data-tab="tracking">ระบบติดตามผู้จอง</button>
+      <button class="tab" data-tab="manager">ผู้จัดการสนาม</button>
+      <button class="tab" data-tab="admin">ADMIN Page</button>
+    </nav>
+
+    <section class="panel active" id="booking">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Tee Time</p>
+          <h2>จองเวลาออกรอบ</h2>
+        </div>
+        <button class="ghost-button" id="resetDemoBtn" type="button">โหลดข้อมูลตัวอย่าง</button>
+      </div>
+
+      <div class="booking-layout">
+        <form class="booking-form" id="bookingForm">
+          <label>
+            ชื่อผู้จอง
+            <input id="guestName" name="guestName" type="text" placeholder="เช่น คุณกานต์" required>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              วันที่ออกรอบ
+              <input id="playDate" name="playDate" type="date" required>
+            </label>
+            <label>
+              เวลาออกรอบ
+              <select id="teeTime" name="teeTime" required></select>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              จำนวนผู้เล่น
+              <select id="players" name="players">
+                <option value="1">1 คน</option>
+                <option value="2">2 คน</option>
+                <option value="3">3 คน</option>
+                <option value="4" selected>4 คน</option>
+              </select>
+            </label>
+            <label>
+              เลือกแคดดี้หลัก
+              <select id="preferredCaddy" name="preferredCaddy"></select>
+            </label>
+          </div>
+
+          <label>
+            รถกอล์ฟ
+            <select id="golfCarts" name="golfCarts">
+              <option value="0">ไม่จองรถกอล์ฟ</option>
+              <option value="1">1 คัน</option>
+              <option value="2" selected>2 คัน</option>
+              <option value="3">3 คัน</option>
+              <option value="4">4 คัน</option>
+            </select>
+          </label>
+
+          <label>
+            เบอร์โทร
+            <input id="guestPhone" name="guestPhone" type="tel" placeholder="08x-xxx-xxxx" required>
+          </label>
+
+          <div class="price-preview" id="bookingPricePreview"></div>
+          <div class="booking-gate" id="bookingGateNotice"></div>
+          <button class="primary-button" id="bookingSubmitBtn" type="submit">ยืนยันการจอง</button>
+          <p class="hint">ระบบจะเปิดให้จองเมื่อมีแคดดี้ลงทะเบียนพร้อมทำงานเพียงพอกับจำนวนผู้เล่นเท่านั้น</p>
+        </form>
+
+        <aside class="availability-box">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Available Caddies</p>
+              <h3>แคดดี้ที่พร้อมทำงาน</h3>
+            </div>
+          </div>
+          <div id="availableCaddies" class="caddy-list"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="panel" id="guest-summary">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Booking Summary</p>
+          <h2>สรุปการจองของผู้จอง</h2>
+        </div>
+        <span class="status-pill green" id="guestSummaryCount">ยังไม่มีรายการจอง</span>
+      </div>
+
+      <div class="summary-filter">
+        <label>
+          ค้นหาจากชื่อหรือเบอร์โทร
+          <input id="guestSummarySearch" type="search" placeholder="เช่น คุณกานต์ หรือ 08x-xxx-xxxx">
+        </label>
+      </div>
+
+      <div id="guestSummaryList" class="summary-list"></div>
+    </section>
+
+    <section class="panel" id="caddy">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Caddy Self Registration</p>
+          <h2>แคดดี้ลงทะเบียนทำงานด้วยตัวเอง</h2>
+        </div>
+        <div class="header-actions">
+          <span class="status-pill" id="workingCount">0 คนพร้อมทำงาน</span>
+          <button class="ghost-button auth-logout hidden" data-logout="caddy" type="button">ออกจากระบบ</button>
+        </div>
+      </div>
+
+      <form class="auth-card" data-auth-form="caddy">
+        <div>
+          <p class="eyebrow">Protected Page</p>
+          <h3>เข้าสู่ระบบเพื่อจัดการแคดดี้</h3>
+        </div>
+        <div class="form-grid">
+          <label>
+            User
+            <input name="username" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" required>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">เข้าสู่ระบบ</button>
+      </form>
+
+      <div class="caddy-workspace protected-content hidden" data-protected="caddy">
+        <form class="caddy-register-form" id="caddyRegisterForm">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Register Today</p>
+              <h3>ลงทะเบียนเข้าทำงานวันนี้</h3>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              เบอร์แคดดี้
+              <input id="caddyNumber" name="caddyNumber" type="text" placeholder="เช่น C-088" required>
+            </label>
+            <label>
+              ชื่อแคดดี้
+              <input id="caddyName" name="caddyName" type="text" placeholder="เช่น ส้มโอ" required>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              ความถนัด
+              <input id="caddySkill" name="caddySkill" type="text" placeholder="เช่น อ่านไลน์กรีนดี" required>
+            </label>
+            <label>
+              เบอร์ติดต่อ
+              <input id="caddyPhone" name="caddyPhone" type="tel" placeholder="08x-xxx-xxxx">
+            </label>
+          </div>
+
+          <label class="work-toggle register-toggle">
+            ยืนยันว่าพร้อมรับงานวันนี้
+            <input id="caddyConfirmed" name="caddyConfirmed" type="checkbox" checked>
+          </label>
+
+          <button class="primary-button" type="submit">ลงทะเบียนแคดดี้</button>
+          <p class="hint">หลังลงทะเบียนแล้ว รายชื่อจะไปแสดงให้ผู้จองเลือกทันที หากยืนยันพร้อมรับงาน</p>
+        </form>
+
+        <div>
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Working Queue</p>
+              <h3>รายชื่อแคดดี้ที่ลงทะเบียน</h3>
+            </div>
+          </div>
+          <div id="caddyRoster" class="roster-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tracking">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Guest Tracking</p>
+          <h2>ติดตามการเดินทางของผู้จอง</h2>
+        </div>
+        <div class="header-actions">
+          <span class="status-pill green" id="trackingSummary">ยังไม่มีรายการเดินทาง</span>
+          <button class="ghost-button auth-logout hidden" id="trackingLogoutBtn" type="button">ออกจาก Tracking</button>
+        </div>
+      </div>
+
+      <form class="auth-card" id="trackingAccessForm">
+        <div>
+          <p class="eyebrow">Caddy Only</p>
+          <h3>ยืนยันเบอร์แคดดี้เพื่อดู Tracking</h3>
+        </div>
+        <label>
+          เบอร์แคดดี้
+          <input id="trackingCaddyNumber" name="trackingCaddyNumber" type="text" placeholder="เช่น C-012" required>
+        </label>
+        <button class="primary-button" type="submit">ดูรายการ Tracking ของฉัน</button>
+        <p class="hint">ระบบจะแสดงเฉพาะรายการจองที่มีเบอร์แคดดี้นี้ถูกจัดไว้เท่านั้น</p>
+      </form>
+
+      <div class="tracking-layout protected-content hidden" id="trackingProtectedContent">
+        <div class="map-card">
+          <div class="course-map" aria-label="แผนที่จำลอง">
+            <div class="map-grid"></div>
+            <div class="road primary-road"></div>
+            <div class="road secondary-road"></div>
+            <div class="road side-road-one"></div>
+            <div class="road side-road-two"></div>
+            <div class="route-progress"></div>
+            <div class="route-line"></div>
+            <div class="map-label label-north">Practice Green</div>
+            <div class="map-label label-south">Lake View Rd.</div>
+            <div class="pin clubhouse">สนามกอล์ฟ</div>
+            <div class="pin guest" id="guestPin">ผู้จอง</div>
+            <div class="eta-bubble">
+              <span>Live ETA</span>
+              <strong id="mapEtaLabel">- นาที</strong>
+            </div>
+          </div>
+          <div class="tracking-controls">
+            <label>
+              เลือกรายการจอง
+              <select id="trackingBooking"></select>
+            </label>
+            <label>
+              ความคืบหน้าการเดินทาง
+              <input id="travelProgress" type="range" min="0" max="100" value="20">
+            </label>
+            <div class="button-row">
+              <button class="secondary-button" id="startTripBtn" type="button">เริ่มเดินทาง</button>
+              <button class="primary-button" id="arriveBtn" type="button">ถึงสนามแล้ว</button>
+            </div>
+            <button class="demo-button" id="demoTrackingBtn" type="button">เปิด Demo Realtime</button>
+          </div>
+        </div>
+
+        <aside class="tracking-detail" id="trackingDetail"></aside>
+      </div>
+    </section>
+
+    <section class="panel" id="manager">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Course Manager</p>
+          <h2>ผู้จัดการสนาม</h2>
+        </div>
+        <div class="header-actions">
+          <span class="status-pill green">สรุปภาพรวม</span>
+          <button class="ghost-button auth-logout hidden" data-logout="manager" type="button">ออกจากระบบ</button>
+        </div>
+      </div>
+
+      <form class="auth-card" data-auth-form="manager">
+        <div>
+          <p class="eyebrow">Protected Page</p>
+          <h3>เข้าสู่ระบบสำหรับผู้จัดการสนาม</h3>
+        </div>
+        <div class="form-grid">
+          <label>
+            User
+            <input name="username" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" required>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">เข้าสู่ระบบ</button>
+      </form>
+
+      <div class="manager-workspace protected-content hidden" data-protected="manager">
+        <section class="admin-overview">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Operation Board</p>
+              <h2>สรุปภาพรวมและรายการจอง</h2>
+            </div>
+          </div>
+
+          <div class="reset-grid">
+            <button class="ghost-button" id="resetBookingsBtn" type="button">รีเซ็ตข้อมูลผู้จอง</button>
+            <button class="ghost-button" id="resetCaddiesBtn" type="button">รีเซ็ตข้อมูลแคดดี้</button>
+            <button class="danger-button" id="resetAllBtn" type="button">รีเซ็ตทั้งหมด</button>
+          </div>
+
+          <div class="assignment-notice hidden" id="latestAssignmentNotice"></div>
+
+          <div class="metric-grid">
+            <div class="metric">
+              <span>รายการจอง</span>
+              <strong id="bookingMetric">0</strong>
+            </div>
+            <div class="metric">
+              <span>แคดดี้พร้อมงาน</span>
+              <strong id="caddyMetric">0</strong>
+            </div>
+            <div class="metric">
+              <span>กำลังเดินทาง</span>
+              <strong id="travelMetric">0</strong>
+            </div>
+          </div>
+
+          <div id="bookingList" class="booking-list"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="panel" id="admin">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Admin Page</p>
+          <h2>กำหนดราคาค่าบริการ</h2>
+        </div>
+        <div class="header-actions">
+          <span class="status-pill green" id="pricingStatus">ราคาปัจจุบัน</span>
+          <button class="ghost-button auth-logout hidden" data-logout="admin" type="button">ออกจากระบบ</button>
+        </div>
+      </div>
+
+      <form class="auth-card" data-auth-form="admin">
+        <div>
+          <p class="eyebrow">Protected Page</p>
+          <h3>เข้าสู่ระบบเพื่อกำหนดราคา</h3>
+        </div>
+        <div class="form-grid">
+          <label>
+            User
+            <input name="username" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" required>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">เข้าสู่ระบบ</button>
+      </form>
+
+      <div class="admin-workspace protected-content hidden" data-protected="admin">
+        <form class="admin-form" id="pricingForm">
+          <div class="section-head compact">
+              <div>
+                <p class="eyebrow">Pricing</p>
+                <h3>กำหนดราคาค่าบริการ</h3>
+              </div>
+            </div>
+
+            <div class="form-grid">
+            <label>
+              ค่ากรีนฟี ต่อผู้เล่น
+              <input id="greenFeePrice" name="greenFee" type="number" min="0" step="50" required>
+            </label>
+            <label>
+              ค่ารถกอล์ฟ ต่อคัน
+              <input id="cartFeePrice" name="cartFee" type="number" min="0" step="50" required>
+            </label>
+          </div>
+
+          <label>
+            ค่าแคดดี้ ต่อคน
+            <input id="caddyFeePrice" name="caddyFee" type="number" min="0" step="50" required>
+          </label>
+
+          <button class="primary-button" type="submit">บันทึกราคา</button>
+          <p class="hint">ราคานี้จะแสดงที่หน้าผู้จองและใช้คำนวณยอดรวมของรายการจองใหม่ ส่วนรายการเก่าจะเก็บราคาตอนจองไว้</p>
+        </form>
+
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js?v=20260602-manager-1"></script>
+</body>
+</html>
