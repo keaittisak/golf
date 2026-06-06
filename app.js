@@ -118,6 +118,16 @@ const elements = {
   bookingMetric: document.querySelector("#bookingMetric"),
   caddyMetric: document.querySelector("#caddyMetric"),
   travelMetric: document.querySelector("#travelMetric"),
+  forecastStatus: document.querySelector("#forecastStatus"),
+  forecastRevenue: document.querySelector("#forecastRevenue"),
+  forecastPlayers: document.querySelector("#forecastPlayers"),
+  forecastCarts: document.querySelector("#forecastCarts"),
+  forecastCaddyCoverage: document.querySelector("#forecastCaddyCoverage"),
+  forecastCaddyNote: document.querySelector("#forecastCaddyNote"),
+  forecastPeakTime: document.querySelector("#forecastPeakTime"),
+  forecastSlotList: document.querySelector("#forecastSlotList"),
+  forecastRiskList: document.querySelector("#forecastRiskList"),
+  forecastRecommendationList: document.querySelector("#forecastRecommendationList"),
   startTripBtn: document.querySelector("#startTripBtn"),
   arriveBtn: document.querySelector("#arriveBtn"),
   demoTrackingBtn: document.querySelector("#demoTrackingBtn"),
@@ -576,6 +586,7 @@ function renderAll() {
   renderGuestSummary();
   renderCaddyRoster();
   renderDashboard();
+  renderForecast();
   renderTrackingOptions();
   renderTracking();
 }
@@ -800,6 +811,136 @@ function renderDashboard() {
     `;
   }).join("");
 }
+
+function renderForecast() {
+  const bookings = state.bookings
+    .slice()
+    .sort((a, b) => a.playDate.localeCompare(b.playDate) || a.teeTime.localeCompare(b.teeTime) || a.id - b.id);
+  const readyCaddies = state.caddies.filter(caddy => caddy.confirmed).length;
+  const totalPlayers = bookings.reduce((sum, booking) => sum + Number(booking.players || 0), 0);
+  const totalCarts = bookings.reduce((sum, booking) => sum + Number(booking.golfCarts || 0), 0);
+  const totalRevenue = bookings.reduce((sum, booking) => sum + Number(getBookingCosts(booking).total || 0), 0);
+  const caddyShortage = Math.max(0, totalPlayers - readyCaddies);
+
+  elements.forecastStatus.textContent = bookings.length ? `Forecast ${bookings.length} รายการ` : "ยังไม่มีข้อมูลจอง";
+  elements.forecastRevenue.textContent = formatCurrency(totalRevenue);
+  elements.forecastPlayers.textContent = `${totalPlayers} คน`;
+  elements.forecastCarts.textContent = `${totalCarts} คัน`;
+  elements.forecastCaddyCoverage.textContent = `${readyCaddies} / ${totalPlayers}`;
+  elements.forecastCaddyNote.textContent = caddyShortage
+    ? `ต้องการแคดดี้ตามจำนวนผู้เล่น ${totalPlayers} คน แต่พร้อมงาน ${readyCaddies} คน จึงควรเรียกเพิ่ม ${caddyShortage} คน`
+    : bookings.length ? `จำนวนแคดดี้พร้อมงาน ${readyCaddies} คน เพียงพอกับผู้เล่นรวม ${totalPlayers} คน` : "ยังไม่มีข้อมูลจอง";
+
+  renderForecastSlots(bookings);
+  renderForecastRisks(bookings, caddyShortage);
+}
+
+function renderForecastSlots(bookings) {
+  if (!bookings.length) {
+    elements.forecastPeakTime.textContent = "ยังไม่มีรายการจอง";
+    elements.forecastSlotList.innerHTML = `<div class="empty-state">ยังไม่มีข้อมูลสำหรับคาดการณ์ช่วงเวลา</div>`;
+    return;
+  }
+
+  const slotMap = bookings.reduce((map, booking) => {
+    const key = `${booking.playDate} ${booking.teeTime}`;
+    if (!map.has(key)) {
+      map.set(key, {
+        playDate: booking.playDate,
+        teeTime: booking.teeTime,
+        bookings: 0,
+        players: 0,
+        carts: 0,
+        revenue: 0
+      });
+    }
+    const slot = map.get(key);
+    slot.bookings += 1;
+    slot.players += Number(booking.players || 0);
+    slot.carts += Number(booking.golfCarts || 0);
+    slot.revenue += Number(getBookingCosts(booking).total || 0);
+    return map;
+  }, new Map());
+
+  const slots = Array.from(slotMap.values())
+    .sort((a, b) => b.players - a.players || a.playDate.localeCompare(b.playDate) || a.teeTime.localeCompare(b.teeTime));
+  const peak = slots[0];
+
+  elements.forecastPeakTime.innerHTML = `
+    <strong>${formatThaiDate(peak.playDate)} • ${peak.teeTime} น.</strong>
+    <span>เป็นช่วงที่มีภาระงานสูงสุดตอนนี้: ${peak.bookings} booking, ${peak.players} ผู้เล่น, ต้องเตรียมรถกอล์ฟ ${peak.carts} คัน และคาดรายได้ ${formatCurrency(peak.revenue)}</span>
+  `;
+
+  elements.forecastSlotList.innerHTML = slots.map((slot, index) => `
+    <article class="forecast-row">
+      <span class="overview-rank">ลำดับ ${index + 1}</span>
+      <div>
+        <strong>${slot.teeTime} น. • ${formatThaiDate(slot.playDate)}</strong>
+        <span>มี ${slot.bookings} booking รวม ${slot.players} ผู้เล่น ต้องเตรียมรถกอล์ฟ ${slot.carts} คัน รายได้ช่วงนี้ประมาณ ${formatCurrency(slot.revenue)}</span>
+        <em>${getSlotAdvice(slot)}</em>
+      </div>
+    </article>
+  `).join("");
+}
+
+function renderForecastRisks(bookings, caddyShortage) {
+  const risks = bookings
+    .filter(booking => (
+      shouldAlertCaddy(booking)
+      || (booking.status === "confirmed" && Number(booking.eta || 0) <= 35)
+      || getBookingCaddyIds(booking).length < Number(booking.players || 1)
+    ))
+    .sort((a, b) => Number(a.eta || 99) - Number(b.eta || 99));
+
+  elements.forecastRiskList.innerHTML = risks.length
+    ? risks.map(booking => {
+      const caddies = getBookingCaddies(booking);
+      const reason = getForecastRiskReason(booking);
+      return `
+        <article class="forecast-row risk">
+          <span class="pill ${booking.status}">${statusText(booking.status)}</span>
+          <div>
+            <strong>${booking.guestName} • ${booking.teeTime} น.</strong>
+            <span>${reason}</span>
+            <em>ETA ${booking.eta} นาที • ${booking.players} ผู้เล่น • รถ ${booking.golfCarts || 0} คัน • แคดดี้ ${caddies.length ? formatCaddyNumbers(caddies) : "ยังไม่ครบ"}</em>
+          </div>
+        </article>
+      `;
+    }).join("")
+    : `<div class="empty-state">ยังไม่มีรายการเสี่ยงที่ต้องติดตามพิเศษ</div>`;
+
+  const recommendations = [];
+  if (caddyShortage) recommendations.push(`เรียกแคดดี้เพิ่มอย่างน้อย ${caddyShortage} คน เพื่อรองรับจำนวนผู้เล่นรวม`);
+  if (bookings.some(booking => shouldAlertCaddy(booking))) recommendations.push("มีผู้จองใกล้ถึงสนาม ควรให้แคดดี้กดยืนยันรับทราบและเตรียมรอ");
+  if (bookings.reduce((sum, booking) => sum + Number(booking.golfCarts || 0), 0) >= 4) recommendations.push("ตรวจความพร้อมรถกอล์ฟก่อนช่วงพีค");
+  if (!recommendations.length) recommendations.push("สถานการณ์โดยรวมปกติ ยังไม่พบความเสี่ยงสำคัญจากข้อมูลปัจจุบัน");
+
+  elements.forecastRecommendationList.innerHTML = recommendations.map(item => `
+    <div class="forecast-advice">${item}</div>
+  `).join("");
+}
+
+function getSlotAdvice(slot) {
+  if (slot.players >= 4) return "ข้อแนะนำ: เตรียมแคดดี้และรถกอล์ฟล่วงหน้า เพราะเป็นช่วงที่มีผู้เล่นหลายคน";
+  if (slot.carts >= 2) return "ข้อแนะนำ: ตรวจสถานะรถกอล์ฟก่อนถึงเวลาออกรอบ";
+  return "ข้อแนะนำ: ภาระงานช่วงนี้ยังไม่สูงมาก สามารถใช้คิวแคดดี้ปกติได้";
+}
+
+function getForecastRiskReason(booking) {
+  const assignedCount = getBookingCaddyIds(booking).length;
+  const playerCount = Number(booking.players || 1);
+  if (assignedCount < playerCount) {
+    return `แคดดี้ยังไม่ครบ: ต้องใช้ ${playerCount} คน แต่มีในรายการ ${assignedCount} คน`;
+  }
+  if (shouldAlertCaddy(booking)) {
+    return `ผู้จองกำลังใกล้ถึงสนาม ควรให้แคดดี้รับทราบและเตรียมรอ`;
+  }
+  if (booking.status === "confirmed" && Number(booking.eta || 0) <= 35) {
+    return `รายการนี้ใกล้ช่วงแจ้งเตือน 30 นาที ควรตรวจความพร้อมของแคดดี้`;
+  }
+  return "ควรติดตามสถานะเพื่อให้การรับผู้จองไม่สะดุด";
+}
+
 
 function renderGuestSummary() {
   const query = elements.guestSummarySearch.value.trim().toLowerCase();

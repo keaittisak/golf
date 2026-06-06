@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260602-manager-1">
+  <link rel="stylesheet" href="styles.css?v=20260606-forecast-2">
 </head>
 <body>
   <header class="hero-visual" aria-label="บรรยากาศสนามกอล์ฟ">
@@ -32,6 +32,7 @@
       <button class="tab" data-tab="caddy">Caddy Page</button>
       <button class="tab" data-tab="tracking">ระบบติดตามผู้จอง</button>
       <button class="tab" data-tab="manager">ผู้จัดการสนาม</button>
+      <button class="tab" data-tab="forecast">Forecast</button>
       <button class="tab" data-tab="admin">ADMIN Page</button>
     </nav>
 
@@ -345,6 +346,66 @@
       </div>
     </section>
 
+    <section class="panel" id="forecast">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Forecast</p>
+          <h2>คาดการณ์การใช้งานสนาม</h2>
+          <p class="section-note">หน้านี้ช่วยอ่านข้อมูลจองปัจจุบัน แล้วแปลเป็นสิ่งที่ผู้จัดการสนามควรเตรียม เช่น คน รถ รายได้ ช่วงพีค และรายการที่ควรติดตามก่อนถึงเวลาออกรอบ</p>
+        </div>
+        <span class="status-pill green" id="forecastStatus">อัปเดตจากข้อมูลล่าสุด</span>
+      </div>
+
+      <div class="forecast-grid">
+        <div class="forecast-card accent-green">
+          <span>คาดการณ์รายได้รวม</span>
+          <strong id="forecastRevenue">฿0</strong>
+          <p>รวมค่ากรีนฟี รถกอล์ฟ และค่าแคดดี้</p>
+        </div>
+        <div class="forecast-card accent-teal">
+          <span>จำนวนผู้เล่น</span>
+          <strong id="forecastPlayers">0 คน</strong>
+          <p>จากรายการจองทั้งหมดในระบบ</p>
+        </div>
+        <div class="forecast-card accent-amber">
+          <span>รถกอล์ฟที่ต้องใช้</span>
+          <strong id="forecastCarts">0 คัน</strong>
+          <p>ใช้วางแผนรถกอล์ฟช่วงเวลาหนาแน่น</p>
+        </div>
+        <div class="forecast-card accent-blue">
+          <span>แคดดี้พร้อมเทียบความต้องการ</span>
+          <strong id="forecastCaddyCoverage">0 / 0</strong>
+          <p id="forecastCaddyNote">ยังไม่มีข้อมูลจอง</p>
+        </div>
+      </div>
+
+      <div class="forecast-layout">
+        <section class="forecast-panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Peak Time</p>
+              <h3>ช่วงเวลาที่คาดว่าจะหนาแน่น</h3>
+              <p class="section-note">เรียงจากช่วงเวลาที่มีผู้เล่นมากที่สุด เพื่อให้สนามจัดแคดดี้ รถกอล์ฟ และพนักงานต้อนรับได้ทันก่อนลูกค้ามาถึง</p>
+            </div>
+          </div>
+          <div class="forecast-highlight" id="forecastPeakTime">ยังไม่มีรายการจอง</div>
+          <div id="forecastSlotList" class="forecast-list"></div>
+        </section>
+
+        <section class="forecast-panel">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">Risk & Action</p>
+              <h3>รายการที่ควรติดตาม</h3>
+              <p class="section-note">ระบบจะดึงรายการที่มีแนวโน้มต้องจัดการก่อน เช่น ผู้จองใกล้ถึงสนาม แคดดี้อาจไม่พอ หรือควรเตรียมรถกอล์ฟ</p>
+            </div>
+          </div>
+          <div id="forecastRiskList" class="forecast-list"></div>
+          <div id="forecastRecommendationList" class="forecast-recommendations"></div>
+        </section>
+      </div>
+    </section>
+
     <section class="panel" id="admin">
       <div class="section-head">
         <div>
@@ -410,6 +471,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260602-manager-1"></script>
+  <script src="app.js?v=20260606-forecast-2"></script>
 </body>
 </html>
