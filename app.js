@@ -1349,15 +1349,59 @@ function getPaymentMethodLabel(method) {
 }
 
 function generateDemoQrMarkup(seed) {
-  const cells = Array.from({ length: 81 }, (_, index) => {
-    const row = Math.floor(index / 9);
-    const col = index % 9;
-    const finder = (row < 3 && col < 3) || (row < 3 && col > 5) || (row > 5 && col < 3);
-    const hash = hashText(`${seed}-${index}`);
-    const active = finder || hash % 3 === 0 || (row === col && hash % 2 === 0);
+  const size = 29;
+  const cells = Array.from({ length: size * size }, (_, index) => {
+    const row = Math.floor(index / size);
+    const col = index % size;
+    const fixed = isQrFinderCell(row, col, size) || isQrTimingCell(row, col, size) || isQrAlignmentCell(row, col);
+    const active = fixed || isQrDataCell(seed, row, col);
     return `<span class="${active ? "active" : ""}"></span>`;
   });
   return cells.join("");
+}
+
+function isQrFinderCell(row, col, size) {
+  const origins = [[0, 0], [0, size - 7], [size - 7, 0]];
+  return origins.some(([startRow, startCol]) => {
+    const localRow = row - startRow;
+    const localCol = col - startCol;
+    if (localRow < 0 || localRow > 6 || localCol < 0 || localCol > 6) return false;
+    const border = localRow === 0 || localRow === 6 || localCol === 0 || localCol === 6;
+    const center = localRow >= 2 && localRow <= 4 && localCol >= 2 && localCol <= 4;
+    return border || center;
+  });
+}
+
+function isQrTimingCell(row, col, size) {
+  const awayFromFinders = col > 7 && col < size - 8;
+  const verticalAway = row > 7 && row < size - 8;
+  return (row === 6 && awayFromFinders && col % 2 === 0) || (col === 6 && verticalAway && row % 2 === 0);
+}
+
+function isQrAlignmentCell(row, col) {
+  const localRow = row - 20;
+  const localCol = col - 20;
+  if (localRow < 0 || localRow > 4 || localCol < 0 || localCol > 4) return false;
+  const border = localRow === 0 || localRow === 4 || localCol === 0 || localCol === 4;
+  const center = localRow === 2 && localCol === 2;
+  return border || center;
+}
+
+function isQrDataCell(seed, row, col) {
+  if (isInQrReservedArea(row, col)) return false;
+  const hash = Math.abs(hashText(`${seed}:${row}:${col}`));
+  const diagonalTexture = (row + col + hash) % 7 === 0;
+  const blockTexture = hash % 5 === 0 || hash % 11 === 0;
+  return diagonalTexture || blockTexture;
+}
+
+function isInQrReservedArea(row, col) {
+  const nearTopLeft = row <= 7 && col <= 7;
+  const nearTopRight = row <= 7 && col >= 21;
+  const nearBottomLeft = row >= 21 && col <= 7;
+  const nearAlignment = row >= 19 && row <= 25 && col >= 19 && col <= 25;
+  const timing = row === 6 || col === 6;
+  return nearTopLeft || nearTopRight || nearBottomLeft || nearAlignment || timing;
 }
 
 function hashText(value) {

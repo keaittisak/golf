@@ -443,24 +443,24 @@ select:focus {
 
 .qr-demo {
   display: grid;
-  grid-template-columns: repeat(9, 8px);
-  grid-template-rows: repeat(9, 8px);
-  gap: 3px;
-  border: 6px solid #fff;
+  grid-template-columns: repeat(29, 3px);
+  grid-template-rows: repeat(29, 3px);
+  gap: 1px;
+  border: 10px solid #fff;
   border-radius: 8px;
   background: #fff;
   box-shadow: 0 8px 22px rgba(18, 51, 33, 0.12);
 }
 
 .qr-demo.small {
-  grid-template-columns: repeat(9, 6px);
-  grid-template-rows: repeat(9, 6px);
-  gap: 2px;
-  border-width: 5px;
+  grid-template-columns: repeat(29, 2px);
+  grid-template-rows: repeat(29, 2px);
+  gap: 1px;
+  border-width: 8px;
 }
 
 .qr-demo span {
-  border-radius: 2px;
+  border-radius: 0;
   background: #e5efe7;
 }
 
