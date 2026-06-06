@@ -127,6 +127,14 @@ const elements = {
   forecastCarts: document.querySelector("#forecastCarts"),
   forecastCaddyCoverage: document.querySelector("#forecastCaddyCoverage"),
   forecastCaddyNote: document.querySelector("#forecastCaddyNote"),
+  dashboardRevenueTotal: document.querySelector("#dashboardRevenueTotal"),
+  dashboardRevenueBars: document.querySelector("#dashboardRevenueBars"),
+  dashboardBookingStatus: document.querySelector("#dashboardBookingStatus"),
+  dashboardStatusBars: document.querySelector("#dashboardStatusBars"),
+  dashboardCaddyStatus: document.querySelector("#dashboardCaddyStatus"),
+  dashboardCaddyBars: document.querySelector("#dashboardCaddyBars"),
+  dashboardPeakSummary: document.querySelector("#dashboardPeakSummary"),
+  dashboardTimeChart: document.querySelector("#dashboardTimeChart"),
   forecastPeakTime: document.querySelector("#forecastPeakTime"),
   forecastSlotList: document.querySelector("#forecastSlotList"),
   forecastRiskList: document.querySelector("#forecastRiskList"),
@@ -888,8 +896,82 @@ function renderForecast() {
     ? `จัดให้ booking แล้ว ${assignedCaddyCount} คน เหลือพร้อมรับจองใหม่ ${readyCaddies} คน`
     : `มีแคดดี้พร้อมรับจอง ${readyCaddies} คน`;
 
+  renderForecastDashboard(bookings, {
+    readyCaddies,
+    assignedCaddyCount,
+    totalRevenue
+  });
   renderForecastSlots(bookings);
   renderForecastRisks(bookings, caddyShortage);
+}
+
+function renderForecastDashboard(bookings, forecast) {
+  const revenue = bookings.reduce((sum, booking) => {
+    const costs = getBookingCosts(booking);
+    return {
+      greenFee: sum.greenFee + Number(costs.greenFee || 0),
+      cartFee: sum.cartFee + Number(costs.cartFee || 0),
+      caddyFee: sum.caddyFee + Number(costs.caddyFee || 0)
+    };
+  }, { greenFee: 0, cartFee: 0, caddyFee: 0 });
+  const revenueTotal = revenue.greenFee + revenue.cartFee + revenue.caddyFee;
+
+  elements.dashboardRevenueTotal.textContent = formatCurrency(revenueTotal);
+  elements.dashboardRevenueBars.innerHTML = renderDashboardBars([
+    { label: "กรีนฟี", value: revenue.greenFee, color: "green", detail: formatCurrency(revenue.greenFee) },
+    { label: "รถกอล์ฟ", value: revenue.cartFee, color: "amber", detail: formatCurrency(revenue.cartFee) },
+    { label: "แคดดี้", value: revenue.caddyFee, color: "teal", detail: formatCurrency(revenue.caddyFee) }
+  ], revenueTotal);
+
+  const statusCounts = bookings.reduce((counts, booking) => {
+    counts[booking.status] = (counts[booking.status] || 0) + 1;
+    return counts;
+  }, {});
+  elements.dashboardBookingStatus.textContent = `${bookings.length} รายการ`;
+  elements.dashboardStatusBars.innerHTML = renderDashboardBars([
+    { label: "ยืนยันจอง", value: statusCounts.confirmed || 0, color: "green", detail: `${statusCounts.confirmed || 0} รายการ` },
+    { label: "กำลังเดินทาง", value: statusCounts.traveling || 0, color: "teal", detail: `${statusCounts.traveling || 0} รายการ` },
+    { label: "ถึงสนาม/เจอนาย", value: (statusCounts.arrived || 0) + (statusCounts.met || 0), color: "amber", detail: `${(statusCounts.arrived || 0) + (statusCounts.met || 0)} รายการ` }
+  ], Math.max(bookings.length, 1));
+
+  const totalCaddies = state.caddies.length;
+  const bookedOut = state.caddies.filter(caddy => !caddy.confirmed && caddy.jobs > 0).length;
+  const inactive = Math.max(0, totalCaddies - forecast.readyCaddies - bookedOut);
+  elements.dashboardCaddyStatus.textContent = `${totalCaddies} คนในระบบ`;
+  elements.dashboardCaddyBars.innerHTML = renderDashboardBars([
+    { label: "พร้อมจอง", value: forecast.readyCaddies, color: "green", detail: `${forecast.readyCaddies} คน` },
+    { label: "ถูกจองแล้ว", value: bookedOut, color: "teal", detail: `${bookedOut} คน` },
+    { label: "ยังไม่เช็กอิน", value: inactive, color: "amber", detail: `${inactive} คน` }
+  ], Math.max(totalCaddies, 1));
+
+  const slots = getForecastSlots(bookings).slice(0, 6);
+  elements.dashboardPeakSummary.textContent = slots.length ? `${slots[0].teeTime} น. หนาแน่นสุด` : "ยังไม่มีข้อมูล";
+  elements.dashboardTimeChart.innerHTML = slots.length
+    ? slots.map(slot => {
+      const maxPlayers = Math.max(...slots.map(item => item.players), 1);
+      const percent = Math.max(8, Math.round((slot.players / maxPlayers) * 100));
+      return `
+        <div class="time-bar">
+          <span>${slot.teeTime}</span>
+          <div class="bar-track"><div class="bar-fill green" style="width: ${percent}%"></div></div>
+          <strong>${slot.players} คน</strong>
+        </div>
+      `;
+    }).join("")
+    : `<div class="empty-state">ยังไม่มีข้อมูลช่วงเวลา</div>`;
+}
+
+function renderDashboardBars(items, total) {
+  return items.map(item => {
+    const percent = total ? Math.round((item.value / total) * 100) : 0;
+    return `
+      <div class="dashboard-bar">
+        <div class="bar-label"><span>${item.label}</span><strong>${item.detail}</strong></div>
+        <div class="bar-track"><div class="bar-fill ${item.color}" style="width: ${Math.max(percent, item.value ? 8 : 0)}%"></div></div>
+        <small>${percent}%</small>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderForecastSlots(bookings) {
@@ -899,6 +981,27 @@ function renderForecastSlots(bookings) {
     return;
   }
 
+  const slots = getForecastSlots(bookings);
+  const peak = slots[0];
+
+  elements.forecastPeakTime.innerHTML = `
+    <strong>${formatThaiDate(peak.playDate)} • ${peak.teeTime} น.</strong>
+    <span>เป็นช่วงที่มีภาระงานสูงสุดตอนนี้: ${peak.bookings} booking, ${peak.players} ผู้เล่น, ต้องเตรียมรถกอล์ฟ ${peak.carts} คัน และคาดรายได้ ${formatCurrency(peak.revenue)}</span>
+  `;
+
+  elements.forecastSlotList.innerHTML = slots.map((slot, index) => `
+    <article class="forecast-row">
+      <span class="overview-rank">ลำดับ ${index + 1}</span>
+      <div>
+        <strong>${slot.teeTime} น. • ${formatThaiDate(slot.playDate)}</strong>
+        <span>มี ${slot.bookings} booking รวม ${slot.players} ผู้เล่น ต้องเตรียมรถกอล์ฟ ${slot.carts} คัน รายได้ช่วงนี้ประมาณ ${formatCurrency(slot.revenue)}</span>
+        <em>${getSlotAdvice(slot)}</em>
+      </div>
+    </article>
+  `).join("");
+}
+
+function getForecastSlots(bookings) {
   const slotMap = bookings.reduce((map, booking) => {
     const key = `${booking.playDate} ${booking.teeTime}`;
     if (!map.has(key)) {
@@ -919,25 +1022,8 @@ function renderForecastSlots(bookings) {
     return map;
   }, new Map());
 
-  const slots = Array.from(slotMap.values())
+  return Array.from(slotMap.values())
     .sort((a, b) => b.players - a.players || a.playDate.localeCompare(b.playDate) || a.teeTime.localeCompare(b.teeTime));
-  const peak = slots[0];
-
-  elements.forecastPeakTime.innerHTML = `
-    <strong>${formatThaiDate(peak.playDate)} • ${peak.teeTime} น.</strong>
-    <span>เป็นช่วงที่มีภาระงานสูงสุดตอนนี้: ${peak.bookings} booking, ${peak.players} ผู้เล่น, ต้องเตรียมรถกอล์ฟ ${peak.carts} คัน และคาดรายได้ ${formatCurrency(peak.revenue)}</span>
-  `;
-
-  elements.forecastSlotList.innerHTML = slots.map((slot, index) => `
-    <article class="forecast-row">
-      <span class="overview-rank">ลำดับ ${index + 1}</span>
-      <div>
-        <strong>${slot.teeTime} น. • ${formatThaiDate(slot.playDate)}</strong>
-        <span>มี ${slot.bookings} booking รวม ${slot.players} ผู้เล่น ต้องเตรียมรถกอล์ฟ ${slot.carts} คัน รายได้ช่วงนี้ประมาณ ${formatCurrency(slot.revenue)}</span>
-        <em>${getSlotAdvice(slot)}</em>
-      </div>
-    </article>
-  `).join("");
 }
 
 function renderForecastRisks(bookings, caddyShortage) {

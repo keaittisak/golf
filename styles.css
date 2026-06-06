@@ -572,6 +572,116 @@ select:focus {
   border-top: 5px solid #4a8cff;
 }
 
+.forecast-dashboard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 14px;
+}
+
+.dashboard-card.wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-card-head strong,
+.dashboard-card-head span {
+  display: block;
+}
+
+.dashboard-card-head span {
+  color: var(--green-strong);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dashboard-bars,
+.time-chart {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-bar,
+.time-bar {
+  display: grid;
+  gap: 6px;
+}
+
+.bar-label,
+.time-bar {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.bar-label strong,
+.time-bar strong {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.bar-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #eaf2e6;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
+.bar-fill.green {
+  background: linear-gradient(90deg, var(--green), var(--lime));
+}
+
+.bar-fill.teal {
+  background: linear-gradient(90deg, var(--teal), #72dce7);
+}
+
+.bar-fill.amber {
+  background: linear-gradient(90deg, var(--amber), var(--sand));
+}
+
+.dashboard-bar small {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.time-bar {
+  grid-template-columns: 64px minmax(0, 1fr) 58px;
+  align-items: center;
+}
+
 .forecast-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
@@ -1311,6 +1421,7 @@ select:focus {
   .booking-layout,
   .tracking-layout,
   .caddy-workspace,
+  .dashboard-grid,
   .reset-grid,
   .forecast-layout,
   .summary-hero,
@@ -1322,5 +1433,9 @@ select:focus {
   .form-grid,
   .button-row {
     grid-template-columns: 1fr;
+  }
+
+  .time-bar {
+    grid-template-columns: 52px minmax(0, 1fr) 48px;
   }
 }

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260606-payment-qr-1">
+  <link rel="stylesheet" href="styles.css?v=20260606-forecast-dashboard-1">
 </head>
 
 <body>
@@ -411,6 +411,50 @@
         </div>
       </div>
 
+      <section class="forecast-dashboard">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Forecast Dashboard</p>
+            <h3>แดชบอร์ดคาดการณ์ภาพรวม</h3>
+            <p class="section-note">ดูภาพรวมแบบกราฟ เพื่อช่วยตัดสินใจเร็วว่าเงินมาจากส่วนไหน booking อยู่สถานะใด และช่วงเวลาใดต้องเตรียมกำลังคนมากที่สุด</p>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="dashboard-card">
+            <div class="dashboard-card-head">
+              <strong>สัดส่วนรายได้</strong>
+              <span id="dashboardRevenueTotal">฿0</span>
+            </div>
+            <div id="dashboardRevenueBars" class="dashboard-bars"></div>
+          </article>
+
+          <article class="dashboard-card">
+            <div class="dashboard-card-head">
+              <strong>สถานะรายการจอง</strong>
+              <span id="dashboardBookingStatus">0 รายการ</span>
+            </div>
+            <div id="dashboardStatusBars" class="dashboard-bars"></div>
+          </article>
+
+          <article class="dashboard-card">
+            <div class="dashboard-card-head">
+              <strong>กำลังแคดดี้</strong>
+              <span id="dashboardCaddyStatus">0 คน</span>
+            </div>
+            <div id="dashboardCaddyBars" class="dashboard-bars"></div>
+          </article>
+
+          <article class="dashboard-card wide">
+            <div class="dashboard-card-head">
+              <strong>กราฟความหนาแน่นตามเวลา</strong>
+              <span id="dashboardPeakSummary">ยังไม่มีข้อมูล</span>
+            </div>
+            <div id="dashboardTimeChart" class="time-chart"></div>
+          </article>
+        </div>
+      </section>
+
       <div class="forecast-layout">
         <section class="forecast-panel">
           <div class="section-head compact">
@@ -506,7 +550,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260606-payment-qr-1"></script>
+  <script src="app.js?v=20260606-forecast-dashboard-1"></script>
 </body>
 
 </html>
