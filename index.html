@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
   <link rel="stylesheet" href="styles.css?v=20260606-payment-qr-1">
 </head>
+
 <body>
   <header class="hero-visual" aria-label="บรรยากาศสนามกอล์ฟ">
     <div class="hero-copy">
@@ -32,7 +34,7 @@
       <button class="tab" data-tab="caddy">Caddy Page</button>
       <button class="tab" data-tab="tracking">ระบบติดตามผู้จอง</button>
       <button class="tab" data-tab="manager">ผู้จัดการสนาม</button>
-      <button class="tab" data-tab="forecast">Forecast</button>
+      <button class="tab" data-tab="forecast">การคาดการณ์โดยรวม</button>
       <button class="tab" data-tab="admin">ADMIN Page</button>
     </nav>
 
@@ -227,7 +229,8 @@
           </label>
 
           <button class="primary-button" type="submit">ลงทะเบียนแคดดี้</button>
-          <p class="hint">หลังลงทะเบียนแล้ว รายชื่อจะไปแสดงให้ผู้จองเลือกทันที หากถูกจองแล้วระบบจะนำออกจากคิวพร้อมจอง และต้องลงทะเบียนใหม่เพื่อรับงานรอบถัดไป</p>
+          <p class="hint">หลังลงทะเบียนแล้ว รายชื่อจะไปแสดงให้ผู้จองเลือกทันที หากถูกจองแล้วระบบจะนำออกจากคิวพร้อมจอง
+            และต้องลงทะเบียนใหม่เพื่อรับงานรอบถัดไป</p>
         </form>
 
         <div>
@@ -379,7 +382,8 @@
         <div>
           <p class="eyebrow">Forecast</p>
           <h2>คาดการณ์การใช้งานสนาม</h2>
-          <p class="section-note">หน้านี้ช่วยอ่านข้อมูลจองปัจจุบัน แล้วแปลเป็นสิ่งที่ผู้จัดการสนามควรเตรียม เช่น คน รถ รายได้ ช่วงพีค และรายการที่ควรติดตามก่อนถึงเวลาออกรอบ</p>
+          <p class="section-note">หน้านี้ช่วยอ่านข้อมูลจองปัจจุบัน แล้วแปลเป็นสิ่งที่ผู้จัดการสนามควรเตรียม เช่น คน รถ
+            รายได้ ช่วงพีค และรายการที่ควรติดตามก่อนถึงเวลาออกรอบ</p>
         </div>
         <span class="status-pill green" id="forecastStatus">อัปเดตจากข้อมูลล่าสุด</span>
       </div>
@@ -413,7 +417,8 @@
             <div>
               <p class="eyebrow">Peak Time</p>
               <h3>ช่วงเวลาที่คาดว่าจะหนาแน่น</h3>
-              <p class="section-note">เรียงจากช่วงเวลาที่มีผู้เล่นมากที่สุด เพื่อให้สนามจัดแคดดี้ รถกอล์ฟ และพนักงานต้อนรับได้ทันก่อนลูกค้ามาถึง</p>
+              <p class="section-note">เรียงจากช่วงเวลาที่มีผู้เล่นมากที่สุด เพื่อให้สนามจัดแคดดี้ รถกอล์ฟ
+                และพนักงานต้อนรับได้ทันก่อนลูกค้ามาถึง</p>
             </div>
           </div>
           <div class="forecast-highlight" id="forecastPeakTime">ยังไม่มีรายการจอง</div>
@@ -425,7 +430,8 @@
             <div>
               <p class="eyebrow">Risk & Action</p>
               <h3>รายการที่ควรติดตาม</h3>
-              <p class="section-note">ระบบจะดึงรายการที่มีแนวโน้มต้องจัดการก่อน เช่น ผู้จองใกล้ถึงสนาม แคดดี้อาจไม่พอ หรือควรเตรียมรถกอล์ฟ</p>
+              <p class="section-note">ระบบจะดึงรายการที่มีแนวโน้มต้องจัดการก่อน เช่น ผู้จองใกล้ถึงสนาม แคดดี้อาจไม่พอ
+                หรือควรเตรียมรถกอล์ฟ</p>
             </div>
           </div>
           <div id="forecastRiskList" class="forecast-list"></div>
@@ -467,13 +473,13 @@
       <div class="admin-workspace protected-content hidden" data-protected="admin">
         <form class="admin-form" id="pricingForm">
           <div class="section-head compact">
-              <div>
-                <p class="eyebrow">Pricing</p>
-                <h3>กำหนดราคาค่าบริการ</h3>
-              </div>
+            <div>
+              <p class="eyebrow">Pricing</p>
+              <h3>กำหนดราคาค่าบริการ</h3>
             </div>
+          </div>
 
-            <div class="form-grid">
+          <div class="form-grid">
             <label>
               ค่ากรีนฟี ต่อผู้เล่น
               <input id="greenFeePrice" name="greenFee" type="number" min="0" step="50" required>
@@ -490,7 +496,8 @@
           </label>
 
           <button class="primary-button" type="submit">บันทึกราคา</button>
-          <p class="hint">ราคานี้จะแสดงที่หน้าผู้จองและใช้คำนวณยอดรวมของรายการจองใหม่ ส่วนรายการเก่าจะเก็บราคาตอนจองไว้</p>
+          <p class="hint">ราคานี้จะแสดงที่หน้าผู้จองและใช้คำนวณยอดรวมของรายการจองใหม่ ส่วนรายการเก่าจะเก็บราคาตอนจองไว้
+          </p>
         </form>
 
       </div>
@@ -501,4 +508,5 @@
 
   <script src="app.js?v=20260606-payment-qr-1"></script>
 </body>
+
 </html>
