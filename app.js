@@ -108,6 +108,7 @@ const elements = {
   workingCount: document.querySelector("#workingCount"),
   trackingBooking: document.querySelector("#trackingBooking"),
   trackingAccessForm: document.querySelector("#trackingAccessForm"),
+  trackingAccessBooking: document.querySelector("#trackingAccessBooking"),
   trackingCaddyNumber: document.querySelector("#trackingCaddyNumber"),
   trackingAccessSubmitBtn: document.querySelector("#trackingAccessSubmitBtn"),
   trackingProtectedContent: document.querySelector("#trackingProtectedContent"),
@@ -194,6 +195,10 @@ function init() {
   elements.caddyRoster.addEventListener("change", handleCaddyToggle);
   elements.bookingList.addEventListener("click", handleBookingAction);
   elements.trackingAccessForm.addEventListener("submit", handleTrackingAccessSubmit);
+  elements.trackingAccessBooking.addEventListener("change", () => {
+    trackingAccessBookingId = Number(elements.trackingAccessBooking.value) || null;
+    renderTrackingCaddyAccessOptions();
+  });
   elements.trackingLogoutBtn.addEventListener("click", handleTrackingLogout);
   elements.trackingDetail.addEventListener("click", handleTrackingCaddyAction);
   elements.trackingBooking.addEventListener("change", () => {
@@ -384,6 +389,7 @@ function handleBookingAction(event) {
   if (action === "tracking") {
     trackingAccessBookingId = id;
     elements.trackingBooking.value = String(id);
+    renderTrackingAccessBookingOptions();
     renderTrackingCaddyAccessOptions();
     renderTracking();
     switchTab("tracking");
@@ -402,6 +408,7 @@ function handleGuestSummaryAction(event) {
   if (!id) return;
   trackingAccessBookingId = id;
   elements.trackingBooking.value = String(id);
+  renderTrackingAccessBookingOptions();
   renderTrackingCaddyAccessOptions();
   renderTracking();
   switchTab("tracking");
@@ -611,6 +618,7 @@ function randomStep() {
 
 function renderAll() {
   renderAuthGate();
+  renderTrackingAccessBookingOptions();
   renderTrackingCaddyAccessOptions();
   renderTrackingGate();
   renderAdminPricing();
@@ -636,6 +644,30 @@ function renderTrackingGate() {
   if (!hasAccess) {
     elements.trackingSummary.textContent = "เลือกแคดดี้ที่ได้รับการจองก่อนดู Tracking";
   }
+}
+
+function renderTrackingAccessBookingOptions() {
+  const bookings = state.bookings
+    .slice()
+    .sort((a, b) => b.id - a.id);
+
+  if (!bookings.length) {
+    elements.trackingAccessBooking.innerHTML = `<option value="">ยังไม่มีรายการจอง</option>`;
+    elements.trackingAccessBooking.disabled = true;
+    trackingAccessBookingId = null;
+    return;
+  }
+
+  elements.trackingAccessBooking.disabled = false;
+  if (!trackingAccessBookingId || !bookings.some(booking => booking.id === trackingAccessBookingId)) {
+    trackingAccessBookingId = bookings[0].id;
+  }
+
+  elements.trackingAccessBooking.innerHTML = bookings.map(booking => {
+    const caddyCount = getBookingCaddyIds(booking).length;
+    return `<option value="${booking.id}">GB-${String(booking.id).padStart(4, "0")} • ${booking.guestName} • ${booking.teeTime} น. • แคดดี้ ${caddyCount} คน</option>`;
+  }).join("");
+  elements.trackingAccessBooking.value = String(trackingAccessBookingId);
 }
 
 function renderTrackingCaddyAccessOptions() {
@@ -1345,6 +1377,12 @@ function getBookedCaddiesForTracking() {
 }
 
 function getTrackingAccessBooking() {
+  const selectedId = Number(elements.trackingAccessBooking.value);
+  if (selectedId) {
+    const selectedBooking = getBooking(selectedId);
+    if (selectedBooking) return selectedBooking;
+  }
+
   if (trackingAccessBookingId) {
     const selectedBooking = getBooking(trackingAccessBookingId);
     if (selectedBooking) return selectedBooking;
