@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260606-forecast-dashboard-1">
+  <link rel="stylesheet" href="styles.css?v=20260606-forecast-auth-1">
 </head>
 
 <body>
@@ -385,9 +385,31 @@
           <p class="section-note">หน้านี้ช่วยอ่านข้อมูลจองปัจจุบัน แล้วแปลเป็นสิ่งที่ผู้จัดการสนามควรเตรียม เช่น คน รถ
             รายได้ ช่วงพีค และรายการที่ควรติดตามก่อนถึงเวลาออกรอบ</p>
         </div>
-        <span class="status-pill green" id="forecastStatus">อัปเดตจากข้อมูลล่าสุด</span>
+        <div class="header-actions">
+          <span class="status-pill green protected-content hidden" id="forecastStatus" data-protected="forecast">อัปเดตจากข้อมูลล่าสุด</span>
+          <button class="ghost-button auth-logout hidden" data-logout="forecast" type="button">ออกจากระบบ</button>
+        </div>
       </div>
 
+      <form class="auth-card" data-auth-form="forecast">
+        <div>
+          <p class="eyebrow">Protected Page</p>
+          <h3>เข้าสู่ระบบเพื่อดู Forecast</h3>
+        </div>
+        <div class="form-grid">
+          <label>
+            User
+            <input name="username" type="text" autocomplete="username" required>
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" required>
+          </label>
+        </div>
+        <button class="primary-button" type="submit">เข้าสู่ระบบ</button>
+      </form>
+
+      <div class="forecast-workspace protected-content hidden" data-protected="forecast">
       <div class="forecast-grid">
         <div class="forecast-card accent-green">
           <span>คาดการณ์รายได้รวม</span>
@@ -482,6 +504,7 @@
           <div id="forecastRecommendationList" class="forecast-recommendations"></div>
         </section>
       </div>
+      </div>
     </section>
 
     <section class="panel" id="admin">
@@ -550,7 +573,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260606-forecast-dashboard-1"></script>
+  <script src="app.js?v=20260606-forecast-auth-1"></script>
 </body>
 
 </html>

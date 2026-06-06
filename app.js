@@ -1621,11 +1621,11 @@ function loadTrackingCaddyId() {
 
 function loadAuthState() {
   const saved = sessionStorage.getItem("golf-booking-auth");
-  if (!saved) return { caddy: false, admin: false, manager: false };
+  if (!saved) return { caddy: false, admin: false, manager: false, forecast: false };
   try {
-    return { caddy: false, admin: false, manager: false, ...JSON.parse(saved) };
+    return { caddy: false, admin: false, manager: false, forecast: false, ...JSON.parse(saved) };
   } catch {
-    return { caddy: false, admin: false, manager: false };
+    return { caddy: false, admin: false, manager: false, forecast: false };
   }
 }
 

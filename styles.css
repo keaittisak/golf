@@ -532,6 +532,11 @@ select:focus {
   margin-bottom: 16px;
 }
 
+.forecast-workspace {
+  display: grid;
+  gap: 16px;
+}
+
 .forecast-card {
   display: grid;
   gap: 7px;
