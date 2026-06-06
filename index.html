@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260606-default-one-1">
+  <link rel="stylesheet" href="styles.css?v=20260606-tracking-booking-filter-1">
 </head>
 
 <body>
@@ -260,14 +260,14 @@
       <form class="auth-card" id="trackingAccessForm">
         <div>
           <p class="eyebrow">Caddy Only</p>
-          <h3>ยืนยันเบอร์แคดดี้เพื่อดู Tracking</h3>
+          <h3>เลือกแคดดี้เพื่อดู Tracking</h3>
         </div>
         <label>
-          เบอร์แคดดี้
-          <input id="trackingCaddyNumber" name="trackingCaddyNumber" type="text" placeholder="เช่น C-012" required>
+          เลือกแคดดี้ที่ได้รับการจองแล้ว
+          <select id="trackingCaddyNumber" name="trackingCaddyNumber" required></select>
         </label>
-        <button class="primary-button" type="submit">ดูรายการ Tracking ของฉัน</button>
-        <p class="hint">ระบบจะแสดงเฉพาะรายการจองที่มีเบอร์แคดดี้นี้ถูกจัดไว้เท่านั้น</p>
+        <button class="primary-button" id="trackingAccessSubmitBtn" type="submit">ดูรายการ Tracking ของฉัน</button>
+        <p class="hint">ระบบจะแสดงเฉพาะแคดดี้ที่ได้รับการจองแล้ว และดูได้เฉพาะรายการที่แคดดี้คนนั้นถูกจัดไว้เท่านั้น</p>
       </form>
 
       <div class="tracking-layout protected-content hidden" id="trackingProtectedContent">
@@ -575,7 +575,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260606-default-one-1"></script>
+  <script src="app.js?v=20260606-tracking-booking-filter-1"></script>
 </body>
 
 </html>
