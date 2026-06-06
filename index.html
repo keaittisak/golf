@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260606-forecast-2">
+  <link rel="stylesheet" href="styles.css?v=20260606-caddy-requeue-1">
 </head>
 <body>
   <header class="hero-visual" aria-label="บรรยากาศสนามกอล์ฟ">
@@ -199,7 +199,7 @@
           </label>
 
           <button class="primary-button" type="submit">ลงทะเบียนแคดดี้</button>
-          <p class="hint">หลังลงทะเบียนแล้ว รายชื่อจะไปแสดงให้ผู้จองเลือกทันที หากยืนยันพร้อมรับงาน</p>
+          <p class="hint">หลังลงทะเบียนแล้ว รายชื่อจะไปแสดงให้ผู้จองเลือกทันที หากถูกจองแล้วระบบจะนำออกจากคิวพร้อมจอง และต้องลงทะเบียนใหม่เพื่อรับงานรอบถัดไป</p>
         </form>
 
         <div>
@@ -373,9 +373,9 @@
           <p>ใช้วางแผนรถกอล์ฟช่วงเวลาหนาแน่น</p>
         </div>
         <div class="forecast-card accent-blue">
-          <span>แคดดี้พร้อมเทียบความต้องการ</span>
-          <strong id="forecastCaddyCoverage">0 / 0</strong>
-          <p id="forecastCaddyNote">ยังไม่มีข้อมูลจอง</p>
+          <span>แคดดี้คงเหลือพร้อมจอง</span>
+          <strong id="forecastCaddyCoverage">0 คน</strong>
+          <p id="forecastCaddyNote">แคดดี้ที่ถูกจองแล้วจะออกจากคิวนี้</p>
         </div>
       </div>
 
@@ -471,6 +471,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260606-forecast-2"></script>
+  <script src="app.js?v=20260606-caddy-requeue-1"></script>
 </body>
 </html>

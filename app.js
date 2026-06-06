@@ -559,6 +559,7 @@ function assignCaddiesToBooking(caddies) {
   const maxQueue = getNextQueue();
   caddies.forEach((caddy, index) => {
     caddy.jobs += 1;
+    caddy.confirmed = false;
     caddy.queue = maxQueue + index;
   });
   normalizeCaddyQueue();
@@ -728,6 +729,11 @@ function renderCaddyRoster() {
   .sort((a, b) => a.queue - b.queue)
   .map(caddy => {
     const alertBookings = getAlertBookingsForCaddy(caddy.id);
+    const bookedOut = !caddy.confirmed && caddy.jobs > 0;
+    const statusLabel = caddy.confirmed ? "พร้อมงาน" : bookedOut ? "ถูกจองแล้ว" : "ยังไม่เช็กอิน";
+    const queueText = caddy.confirmed
+      ? `คิวรับงานที่ ${getQueueRank(caddy.id)}`
+      : bookedOut ? "ออกจากคิวพร้อมจองแล้ว ต้องลงทะเบียนใหม่หากรับงานรอบถัดไป" : "ยังไม่อยู่ในคิวรับงาน";
     return `
       <article class="caddy-card">
         <div class="caddy-top">
@@ -738,13 +744,13 @@ function renderCaddyRoster() {
               <span class="meta">${caddy.skill}</span>
             </div>
           </div>
-          <span class="pill ${caddy.confirmed ? "ready" : ""}">${caddy.confirmed ? "พร้อมงาน" : "ยังไม่เช็กอิน"}</span>
+          <span class="pill ${caddy.confirmed ? "ready" : bookedOut ? "busy" : ""}">${statusLabel}</span>
         </div>
         <label class="work-toggle">
-          ยืนยันทำงานวันนี้
-          <input data-caddy-toggle="${caddy.id}" type="checkbox" ${caddy.confirmed ? "checked" : ""}>
+          ${bookedOut ? "ต้องลงทะเบียนใหม่เพื่อรับงานรอบถัดไป" : "ยืนยันทำงานวันนี้"}
+          <input data-caddy-toggle="${caddy.id}" type="checkbox" ${caddy.confirmed ? "checked" : ""} ${bookedOut ? "disabled" : ""}>
         </label>
-        <div class="meta">รอบที่ได้รับ ${caddy.jobs} • ${caddy.confirmed ? `คิวรับงานที่ ${getQueueRank(caddy.id)}` : "ยังไม่อยู่ในคิวรับงาน"} ${caddy.phone ? `• ${caddy.phone}` : ""}</div>
+        <div class="meta">รอบที่ได้รับ ${caddy.jobs} • ${queueText} ${caddy.phone ? `• ${caddy.phone}` : ""}</div>
         ${alertBookings.map(booking => `
           <div class="arrival-alert compact-alert">
             <strong>เตรียมไปรอผู้จอง</strong>
@@ -817,19 +823,20 @@ function renderForecast() {
     .slice()
     .sort((a, b) => a.playDate.localeCompare(b.playDate) || a.teeTime.localeCompare(b.teeTime) || a.id - b.id);
   const readyCaddies = state.caddies.filter(caddy => caddy.confirmed).length;
+  const assignedCaddyCount = new Set(bookings.flatMap(booking => getBookingCaddyIds(booking))).size;
   const totalPlayers = bookings.reduce((sum, booking) => sum + Number(booking.players || 0), 0);
   const totalCarts = bookings.reduce((sum, booking) => sum + Number(booking.golfCarts || 0), 0);
   const totalRevenue = bookings.reduce((sum, booking) => sum + Number(getBookingCosts(booking).total || 0), 0);
-  const caddyShortage = Math.max(0, totalPlayers - readyCaddies);
+  const caddyShortage = Math.max(0, totalPlayers - assignedCaddyCount);
 
   elements.forecastStatus.textContent = bookings.length ? `Forecast ${bookings.length} รายการ` : "ยังไม่มีข้อมูลจอง";
   elements.forecastRevenue.textContent = formatCurrency(totalRevenue);
   elements.forecastPlayers.textContent = `${totalPlayers} คน`;
   elements.forecastCarts.textContent = `${totalCarts} คัน`;
-  elements.forecastCaddyCoverage.textContent = `${readyCaddies} / ${totalPlayers}`;
-  elements.forecastCaddyNote.textContent = caddyShortage
-    ? `ต้องการแคดดี้ตามจำนวนผู้เล่น ${totalPlayers} คน แต่พร้อมงาน ${readyCaddies} คน จึงควรเรียกเพิ่ม ${caddyShortage} คน`
-    : bookings.length ? `จำนวนแคดดี้พร้อมงาน ${readyCaddies} คน เพียงพอกับผู้เล่นรวม ${totalPlayers} คน` : "ยังไม่มีข้อมูลจอง";
+  elements.forecastCaddyCoverage.textContent = `${readyCaddies} คน`;
+  elements.forecastCaddyNote.textContent = bookings.length
+    ? `จัดให้ booking แล้ว ${assignedCaddyCount} คน เหลือพร้อมรับจองใหม่ ${readyCaddies} คน`
+    : `มีแคดดี้พร้อมรับจอง ${readyCaddies} คน`;
 
   renderForecastSlots(bookings);
   renderForecastRisks(bookings, caddyShortage);
