@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Golf TeeTime Booking</title>
-  <link rel="stylesheet" href="styles.css?v=20260606-caddy-requeue-1">
+  <link rel="stylesheet" href="styles.css?v=20260606-payment-1">
 </head>
 <body>
   <header class="hero-visual" aria-label="บรรยากาศสนามกอล์ฟ">
@@ -96,6 +96,34 @@
           </label>
 
           <div class="price-preview" id="bookingPricePreview"></div>
+
+          <section class="payment-box">
+            <div class="section-head compact">
+              <div>
+                <p class="eyebrow">Payment Demo</p>
+                <h3>ช่องทางชำระเงินและแนบสลิป</h3>
+              </div>
+            </div>
+
+            <label>
+              เลือกช่องทางชำระเงิน
+              <select id="paymentMethod" name="paymentMethod" required>
+                <option value="promptpay">PromptPay QR</option>
+                <option value="bank-transfer">โอนผ่านบัญชีธนาคาร</option>
+                <option value="credit-card">บัตรเครดิต / เดบิต</option>
+                <option value="counter">ชำระที่เคาน์เตอร์สนาม</option>
+              </select>
+            </label>
+
+            <div class="payment-preview" id="paymentPreview"></div>
+
+            <label>
+              อัพโหลดสลิปชำระเงิน
+              <input id="paymentSlip" name="paymentSlip" type="file" accept="image/*,.pdf">
+            </label>
+            <p class="hint">QR-Code และการอัพโหลดสลิปนี้เป็น DEMO สำหรับจำลองขั้นตอนชำระเงิน ยังไม่มีการตัดเงินจริง</p>
+          </section>
+
           <div class="booking-gate" id="bookingGateNotice"></div>
           <button class="primary-button" id="bookingSubmitBtn" type="submit">ยืนยันการจอง</button>
           <p class="hint">ระบบจะเปิดให้จองเมื่อมีแคดดี้ลงทะเบียนพร้อมทำงานเพียงพอกับจำนวนผู้เล่นเท่านั้น</p>
@@ -471,6 +499,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=20260606-caddy-requeue-1"></script>
+  <script src="app.js?v=20260606-payment-1"></script>
 </body>
 </html>

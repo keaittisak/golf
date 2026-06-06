@@ -94,6 +94,9 @@ const elements = {
   golfCarts: document.querySelector("#golfCarts"),
   preferredCaddy: document.querySelector("#preferredCaddy"),
   bookingPricePreview: document.querySelector("#bookingPricePreview"),
+  paymentMethod: document.querySelector("#paymentMethod"),
+  paymentPreview: document.querySelector("#paymentPreview"),
+  paymentSlip: document.querySelector("#paymentSlip"),
   bookingSubmitBtn: document.querySelector("#bookingSubmitBtn"),
   bookingGateNotice: document.querySelector("#bookingGateNotice"),
   availableCaddies: document.querySelector("#availableCaddies"),
@@ -163,9 +166,18 @@ function init() {
   elements.players.addEventListener("change", () => {
     renderBookingGate();
     renderBookingPricePreview();
+    renderPaymentPreview();
   });
+  elements.playDate.addEventListener("change", renderPaymentPreview);
+  elements.teeTime.addEventListener("change", renderPaymentPreview);
   elements.golfCarts.addEventListener("change", renderBookingPricePreview);
-  elements.preferredCaddy.addEventListener("change", renderBookingGate);
+  elements.golfCarts.addEventListener("change", renderPaymentPreview);
+  elements.paymentMethod.addEventListener("change", renderPaymentPreview);
+  elements.paymentSlip.addEventListener("change", renderPaymentPreview);
+  elements.preferredCaddy.addEventListener("change", () => {
+    renderBookingGate();
+    renderPaymentPreview();
+  });
   elements.guestSummarySearch.addEventListener("input", renderGuestSummary);
   elements.guestSummaryList.addEventListener("click", handleGuestSummaryAction);
   elements.caddyRegisterForm.addEventListener("submit", handleCaddyRegister);
@@ -209,6 +221,7 @@ function handleBookingSubmit(event) {
   const preferredId = Number(form.get("preferredCaddy"));
   const playerCount = Number(form.get("players"));
   const golfCarts = Number(form.get("golfCarts"));
+  const paymentSlip = elements.paymentSlip.files[0];
   const selectedCaddies = selectCaddiesForBooking(playerCount, preferredId);
   const costs = calculateBookingCosts(playerCount, golfCarts, selectedCaddies.length);
 
@@ -235,6 +248,9 @@ function handleBookingSubmit(event) {
     caddyId: selectedCaddies[0].id,
     caddyIds: selectedCaddies.map(caddy => caddy.id),
     costs,
+    paymentMethod: form.get("paymentMethod"),
+    paymentSlipName: paymentSlip ? paymentSlip.name : "",
+    paymentStatus: paymentSlip ? "แนบสลิปแล้ว" : "รอตรวจสอบการชำระเงิน",
     assignedBy: getAssignedByText(preferredId, playerCount),
     status: "confirmed",
     progress: 0,
@@ -583,6 +599,7 @@ function renderAll() {
   renderPreferredCaddyOptions();
   renderBookingGate();
   renderBookingPricePreview();
+  renderPaymentPreview();
   renderAvailableCaddies();
   renderGuestSummary();
   renderCaddyRoster();
@@ -685,6 +702,39 @@ function renderBookingPricePreview() {
     <div class="price-row"><span>ค่ารถกอล์ฟ ${formatCurrency(state.pricing.cartFee)} x ${golfCarts}</span><b>${formatCurrency(costs.cartFee)}</b></div>
     <div class="price-row"><span>ค่าแคดดี้ ${formatCurrency(state.pricing.caddyFee)} x ${playerCount}</span><b>${formatCurrency(costs.caddyFee)}</b></div>
     <div class="price-row total"><span>ยอดรวม</span><b>${formatCurrency(costs.total)}</b></div>
+  `;
+}
+
+function renderPaymentPreview() {
+  const playerCount = Number(elements.players.value || 1);
+  const golfCarts = Number(elements.golfCarts.value || 0);
+  const readyCount = getReadyCaddiesInQueue().length;
+  const shortage = Math.max(0, playerCount - readyCount);
+  const method = elements.paymentMethod.value;
+  const methodLabel = getPaymentMethodLabel(method);
+  const slipFile = elements.paymentSlip.files[0];
+
+  if (!readyCount || shortage > 0) {
+    elements.paymentPreview.className = "payment-preview unavailable";
+    elements.paymentPreview.innerHTML = `
+      <strong>ยังสร้าง QR-Code ไม่ได้</strong>
+      <span>ระบบจะสร้าง QR DEMO หลังจากมีแคดดี้พร้อมเพียงพอและคำนวณยอดรวมได้</span>
+    `;
+    return;
+  }
+
+  const costs = calculateBookingCosts(playerCount, golfCarts, playerCount);
+  elements.paymentPreview.className = "payment-preview";
+  elements.paymentPreview.innerHTML = `
+    <div class="qr-demo" aria-label="QR-Code สำหรับชำระเงินแบบ DEMO">
+      ${generateDemoQrMarkup(`${method}-${costs.total}-${elements.playDate.value}-${elements.teeTime.value}`)}
+    </div>
+    <div class="payment-copy">
+      <strong>${methodLabel}</strong>
+      <span>ยอดชำระ DEMO: ${formatCurrency(costs.total)}</span>
+      <span>Ref: GB-DEMO-${elements.playDate.value.replaceAll("-", "")}-${elements.teeTime.value.replace(":", "")}</span>
+      <span>สลิป: ${slipFile ? slipFile.name : "ยังไม่ได้แนบสลิป"}</span>
+    </div>
   `;
 }
 
@@ -1026,9 +1076,18 @@ function renderGuestSummary() {
             <span>ยอดรวมค่าใช้จ่าย</span>
             <strong>${formatCurrency(getBookingCosts(booking).total)}</strong>
           </div>
+          <div class="summary-item">
+            <span>ช่องทางชำระเงิน</span>
+            <strong>${getPaymentMethodLabel(booking.paymentMethod)}</strong>
+          </div>
+          <div class="summary-item">
+            <span>สถานะสลิป</span>
+            <strong>${booking.paymentSlipName ? "แนบสลิปแล้ว" : "ยังไม่ได้แนบสลิป"}</strong>
+          </div>
         </div>
 
         ${renderCostSummary(booking)}
+        ${renderPaymentSummary(booking)}
         ${renderCaddyMetNotice(booking)}
 
         <div class="booking-actions">
@@ -1257,6 +1316,52 @@ function renderCostSummary(booking) {
       <div class="price-row total"><span>ยอดรวม</span><b>${formatCurrency(costs.total)}</b></div>
     </div>
   `;
+}
+
+function renderPaymentSummary(booking) {
+  const costs = getBookingCosts(booking);
+  const methodLabel = getPaymentMethodLabel(booking.paymentMethod);
+  const slipName = booking.paymentSlipName || "ยังไม่ได้แนบสลิป";
+  return `
+    <div class="payment-summary">
+      <div class="qr-demo small" aria-label="QR-Code ชำระเงินแบบ DEMO">
+        ${generateDemoQrMarkup(`${booking.paymentMethod || "promptpay"}-${costs.total}-${booking.id}`)}
+      </div>
+      <div class="payment-copy">
+        <strong>ข้อมูลชำระเงิน DEMO</strong>
+        <span>ช่องทาง: ${methodLabel}</span>
+        <span>ยอดชำระ: ${formatCurrency(costs.total)}</span>
+        <span>Ref: GB-${String(booking.id).padStart(4, "0")}</span>
+        <span>สลิป: ${slipName}</span>
+      </div>
+    </div>
+  `;
+}
+
+function getPaymentMethodLabel(method) {
+  const labels = {
+    promptpay: "PromptPay QR",
+    "bank-transfer": "โอนผ่านบัญชีธนาคาร",
+    "credit-card": "บัตรเครดิต / เดบิต",
+    counter: "ชำระที่เคาน์เตอร์สนาม"
+  };
+  return labels[method] || "PromptPay QR";
+}
+
+function generateDemoQrMarkup(seed) {
+  const cells = Array.from({ length: 81 }, (_, index) => {
+    const row = Math.floor(index / 9);
+    const col = index % 9;
+    const finder = (row < 3 && col < 3) || (row < 3 && col > 5) || (row > 5 && col < 3);
+    const hash = hashText(`${seed}-${index}`);
+    const active = finder || hash % 3 === 0 || (row === col && hash % 2 === 0);
+    return `<span class="${active ? "active" : ""}"></span>`;
+  });
+  return cells.join("");
+}
+
+function hashText(value) {
+  return String(value).split("").reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0);
 }
 
 function formatCurrency(value) {
